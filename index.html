@@ -3,10 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Discover new ways to earn rewards with our 'Read, Watch & Learn or Earn' website. Engage with a variety of content and earn rewards for your participation. Perfect for those who love to learn and earn simultaneously!">
-<meta name="keywords" content="earn money, rewards, read and earn, watch and earn, learn and earn, online rewards, passive income, educational rewards">
-
-  <title>Read Watch & learn or Earn</title>
+  <title>Earning Website</title>
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
   <style>
     #pre-login-content {
@@ -27,7 +24,13 @@
     #pre-login-panel {
       background-color: #FFC107; /* Amber */
       color: black;
-      }  </style>
+      } 
+      .share-button {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+    } </style>
   <script type="module">
     // Import Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
@@ -115,8 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-    // Sign Up Function
-    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+let userReferralCode = ''; // Variable to store the referral code
+
+// Assuming you're fetching user data after signup
+ document.getElementById('signup-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = e.target.elements.email.value;
   const password = e.target.elements.password.value;
@@ -132,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Generate a unique referral code
     const newReferralCode = generateReferralCode();
+    userReferralCode = newReferralCode; // Store the new referral code in the variable
 
     // Store user data in Firestore
     const userRef = doc(db, "users", user.uid);
@@ -142,12 +148,13 @@ document.addEventListener('DOMContentLoaded', () => {
       referralCode: newReferralCode // Store the new user's referral code
     });
 
+    // Enable the share button once referral code is set
+    document.getElementById('share-btn').disabled = false;
+
     // Handle the referral code
     if (referralCode) {
-      // Find the user who referred
       const referrerSnap = await getDoc(doc(db, "users", referralCode));
       if (referrerSnap.exists()) {
-        // Update referrer's document to include the new user as a referral
         await updateDoc(doc(db, "users", referralCode), {
           referrals: arrayUnion(user.uid)
         });
@@ -158,10 +165,35 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Share function
+document.getElementById('share-btn').addEventListener('click', () => {
+  shareWithReferral(userReferralCode);
+});
+
+// Function to share with referral
+function shareWithReferral(referralCode) {
+  const url = `https://readandearn.vercel.app/?ref=${referralCode}`;
+
+  if (navigator.share) {
+    navigator.share({
+      title: 'Join Read & Earn!',
+      text: 'Check out this website and start earning!',
+      url: url,
+    }).then(() => {
+      console.log('Thanks for sharing!');
+    }).catch((error) => {
+      console.error('Error sharing:', error);
+    });
+  } else {
+    alert(`Share this link: ${url}`);
+  }
+}
+
 // Function to generate a unique referral code
 function generateReferralCode() {
   return 'REF-' + Math.random().toString(36).substr(2, 9).toUpperCase();
 }
+
 
     // Login Function
     document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -659,7 +691,7 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
  <!-- Withdraw Form -->
  <div class="w3-card w3-margin w3-padding">
     <h3>Withdraw Your Coins</h3>
-    <label for="withdraw-amount">Amount (1000 coins / 100 = Rupees):</label>
+    <label for="withdraw-amount">Amount (in Coins, min 1000):</label>
     <input type="number" id="withdraw-amount" class="w3-input w3-margin-bottom" min="1000" step="1000">
     
     <label for="withdraw-currency">Select Currency:</label>
@@ -673,6 +705,12 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
     <input type="text" id="withdraw-address" class="w3-input w3-margin-bottom" placeholder="Enter your payment address" required>
 
     <button id="withdraw-btn" class="w3-button w3-green">Withdraw</button>
+   <!-- Share Button -->
+<div class="share-button w3-container">
+  <button class="w3-button w3-blue w3-round" id="share-btn" disabled>Share</button>
+</div>
+   
+    
   </div>
 </div>
 </div>
