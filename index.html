@@ -28,7 +28,7 @@
       .share-button {
       position: fixed;
       bottom: 20px;
-      left: 20px;
+      right: 20px;
       z-index: 1000;
     } </style>
   <script type="module">
@@ -149,7 +149,7 @@ let userReferralCode = ''; // Variable to store the referral code
     });
 
     // Enable the share button once referral code is set
-    document.getElementById('share-btn').disabled = false;
+    document.getElementById('share-btn').disabled = true;
 
     // Handle the referral code
     if (referralCode) {
