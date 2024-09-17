@@ -705,13 +705,14 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
     <input type="text" id="withdraw-address" class="w3-input w3-margin-bottom" placeholder="Enter your payment address" required>
 
     <button id="withdraw-btn" class="w3-button w3-green">Withdraw</button>
-   <!-- Share Button -->
-<div class="share-button w3-container">
-  <button class="w3-button w3-blue w3-round" id="share-btn" disabled>Share</button>
-</div>
+  
    
     
   </div>
+  <!-- Share Button -->
+    <div class="share-button w3-container">
+          <button class="w3-button w3-blue w3-round" onclick="shareWithReferral()">Share</button>
+    </div>
 </div>
 </div>
 </body>
