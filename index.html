@@ -30,7 +30,17 @@
       bottom: 20px;
       right: 20px;
       z-index: 1000;
-    } </style>
+    }
+    .share-btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 15px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+    }
+  </style>
   <script type="module">
     // Import Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
@@ -378,25 +388,37 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
-      function shareWithReferral() {
-   
-    // URL with the referral code
-    const url = `https://readandearn.vercel.app/?ref=${referralCode}`;
-    
-    // Share functionality
+let referralCode = ''; // This will be dynamically set
+
+  // Fetch referral code from Firestore (assuming user is authenticated)
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+      const userId = user.uid;
+      const userRef = firebase.firestore().collection('users').doc(userId);
+      userRef.get().then((doc) => {
+        if (doc.exists) {
+          referralCode = doc.data().referralCode;
+        }
+      });
+    }
+  });
+
+  // Function to share content
+  function shareContent() {
+    const shareUrl = `https://readandearn.vercel.app/?referralCode=${referralCode}`;
     if (navigator.share) {
       navigator.share({
-        title: 'Join Read & Earn!',
-        text: 'Check out this website and start earning!',
-        url: url,
+        title: 'Read and Earn',
+        text: 'Join me on Read and Earn!',
+        url: shareUrl,
       }).then(() => {
         console.log('Thanks for sharing!');
       }).catch((error) => {
         console.error('Error sharing:', error);
       });
     } else {
-      // Fallback for browsers that don't support the Web Share API
-      alert(`Share this link: ${url}`);
+      // Fallback for browsers that don't support Web Share API
+      alert('Sharing not supported on this browser. Copy this link: ' + shareUrl);
     }
   }
 
@@ -697,10 +719,11 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
     <input type="text" id="withdraw-address" class="w3-input w3-margin-bottom" placeholder="Enter your payment address" required>
 
     <button id="withdraw-btn" class="w3-button w3-green">Withdraw</button>
-   <!-- Share Button -->
-<div class="share-button w3-container">
-  <button class="w3-button w3-blue w3-round" onclick="shareWithReferral()">Share</button>
+  <!-- Share Button -->
+<div class="share-btn-container w3-animate-bottom">
+  <button class="share-btn w3-hover-opacity" onclick="shareContent()">Share</button>
 </div>
+
   
 
   </div>
