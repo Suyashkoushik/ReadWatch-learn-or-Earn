@@ -28,7 +28,7 @@
       .share-button {
       position: fixed;
       bottom: 20px;
-      left: 20px;
+      right: 20px;
       z-index: 1000;
     } </style>
   <script type="module">
@@ -118,30 +118,49 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-let userReferralCode = ''; // Variable to store the referral code
-  // Share function
-  document.getElementById('share-btn').addEventListener('click', () => {
-    shareWithReferral(userReferralCode);
-  });
+    // Sign Up Function
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = e.target.elements.email.value;
+  const password = e.target.elements.password.value;
+  const referralCode = e.target.elements.referralCode.value;
 
-  // Function to share with referral
-  function shareWithReferral(referralCode) {
-    const url = `https://readandearn.vercel.app/?ref=${referralCode}`;
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    // Send verification email
+    await sendEmailVerification(user);
+    alert("Verification email sent!");
 
-    if (navigator.share) {
-      navigator.share({
-        title: 'Join Read & Earn!',
-        text: 'Check out this website and start earning!',
-        url: url,
-      }).then(() => {
-        console.log('Thanks for sharing!');
-      }).catch((error) => {
-        console.error('Error sharing:', error);
-      });
-    } else {
-      alert(`Share this link: ${url}`);
+    // Generate a unique referral code
+    const newReferralCode = generateReferralCode();
+
+    // Store user data in Firestore
+    const userRef = doc(db, "users", user.uid);
+    await setDoc(userRef, {
+      email,
+      coins: 0,
+      referrals: [],
+      referralCode: newReferralCode // Store the new user's referral code
+    });
+
+    // Handle the referral code
+    if (referralCode) {
+      // Find the user who referred
+      const referrerSnap = await getDoc(doc(db, "users", referralCode));
+      if (referrerSnap.exists()) {
+        // Update referrer's document to include the new user as a referral
+        await updateDoc(doc(db, "users", referralCode), {
+          referrals: arrayUnion(user.uid)
+        });
+      }
     }
+  } catch (error) {
+    alert(error.message);
   }
+});
+
 // Function to generate a unique referral code
 function generateReferralCode() {
   return 'REF-' + Math.random().toString(36).substr(2, 9).toUpperCase();
@@ -657,15 +676,38 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
     <input type="text" id="withdraw-address" class="w3-input w3-margin-bottom" placeholder="Enter your payment address" required>
 
     <button id="withdraw-btn" class="w3-button w3-green">Withdraw</button>
-    <!-- Share Button -->
-    <div class="share-button w3-container">
-          <button class="w3-button w3-blue w3-round" onclick="shareWithReferral()">Share</button>
-    </div>
-   
+   <!-- Share Button -->
+<div class="share-button w3-container">
+  <button class="w3-button w3-blue w3-round" onclick="shareWithReferral()">Share</button>
+</div>
+   <script>
+  function shareWithReferral() {
+    // Assuming the referral code is stored in a variable
+    const referralCode = 'USER_REFERRAL_CODE'; // Replace with dynamic referral code
+
+    // URL with the referral code
+    const url = `https://readandearn.vercel.app/?ref=${referralCode}`;
     
+    // Share functionality
+    if (navigator.share) {
+      navigator.share({
+        title: 'Join Read & Earn!',
+        text: 'Check out this website and start earning!',
+        url: url,
+      }).then(() => {
+        console.log('Thanks for sharing!');
+      }).catch((error) => {
+        console.error('Error sharing:', error);
+      });
+    } else {
+      // Fallback for browsers that don't support the Web Share API
+      alert(`Share this link: ${url}`);
+    }
+  }
+</script>
+
   </div>
 </div>
 </div>
 </body>
 </html>
-
