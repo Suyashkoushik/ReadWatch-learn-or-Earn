@@ -378,6 +378,27 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+      function shareWithReferral() {
+   
+    // URL with the referral code
+    const url = `https://readandearn.vercel.app/?ref=${referralCode}`;
+    
+    // Share functionality
+    if (navigator.share) {
+      navigator.share({
+        title: 'Join Read & Earn!',
+        text: 'Check out this website and start earning!',
+        url: url,
+      }).then(() => {
+        console.log('Thanks for sharing!');
+      }).catch((error) => {
+        console.error('Error sharing:', error);
+      });
+    } else {
+      // Fallback for browsers that don't support the Web Share API
+      alert(`Share this link: ${url}`);
+    }
+  }
 
 // Add event listeners for the buttons
 document.addEventListener('DOMContentLoaded', () => {
@@ -680,31 +701,7 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
 <div class="share-button w3-container">
   <button class="w3-button w3-blue w3-round" onclick="shareWithReferral()">Share</button>
 </div>
-   <script>
-  function shareWithReferral() {
-    // Assuming the referral code is stored in a variable
-    const referralCode =  referralCode; // Replace with dynamic referral code
-
-    // URL with the referral code
-    const url = `https://readandearn.vercel.app/?ref=${referralCode}`;
-    
-    // Share functionality
-    if (navigator.share) {
-      navigator.share({
-        title: 'Join Read & Earn!',
-        text: 'Check out this website and start earning!',
-        url: url,
-      }).then(() => {
-        console.log('Thanks for sharing!');
-      }).catch((error) => {
-        console.error('Error sharing:', error);
-      });
-    } else {
-      // Fallback for browsers that don't support the Web Share API
-      alert(`Share this link: ${url}`);
-    }
-  }
-</script>
+  
 
   </div>
 </div>
