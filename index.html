@@ -118,14 +118,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-    // Sign Up Function
-    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+  // Sign Up Function
+document.getElementById('signup-form-inner').addEventListener('submit', async (e) => {
   e.preventDefault();
+  
   const email = e.target.elements.email.value;
   const password = e.target.elements.password.value;
   const referralCode = e.target.elements.referralCode.value;
 
   try {
+    // Create user
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
@@ -142,17 +144,17 @@ document.addEventListener('DOMContentLoaded', () => {
       email,
       coins: 0,
       referrals: [],
-      referralCode: newReferralCode // Store the new user's referral code
+      referralCode: newReferralCode, // Store the new user's referral code
     });
 
-    // Handle the referral code
+    // Handle the referral code if provided
     if (referralCode) {
       // Find the user who referred
       const referrerSnap = await getDoc(doc(db, "users", referralCode));
       if (referrerSnap.exists()) {
         // Update referrer's document to include the new user as a referral
-        await updateDoc(doc(db, "users", referralCode), {
-          referrals: arrayUnion(user.uid)
+        await updateDoc(doc(db, "users", referrerSnap.id), {
+          referrals: arrayUnion(user.uid) // Add new user ID to the referrer's referral list
         });
       }
     }
@@ -165,7 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function generateReferralCode() {
   return 'REF-' + Math.random().toString(36).substr(2, 9).toUpperCase();
 }
-
     // Login Function
     document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -612,18 +613,20 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
    <div id="signup-form" class="w3-container w3-card w3-padding" style="display:none;">
     <h2>Sign Up</h2>
     <form id="signup-form-inner">
-    <label>Email</label>
-    <input type="email" name="email" class="w3-input" required>
-    <label>Password</label>
-    <input type="password" name="password" class="w3-input" required>
-    <label>Referral Code (optional)</label>
-    <input type="text" name="referral" class="w3-input">
-    <button type="submit" class="w3-button w3-green">Sign Up</button>
-   </form>
-   <button id="show-login" class="w3-button w3-blue">Login</button>
-   <button id="back-button-signup" class="w3-button w3-red" onclick="goBackFromSignup()">Back</button>
-   </div>
-  
+      <label>Email</label>
+      <input type="email" name="email" class="w3-input" required>
+      
+      <label>Password</label>
+      <input type="password" name="password" class="w3-input" required>
+      
+      <label>Referral Code (optional)</label>
+      <input type="text" name="referralCode" class="w3-input">
+      
+      <button type="submit" class="w3-button w3-green">Sign Up</button>
+    </form>
+    <button id="show-login" class="w3-button w3-blue">Login</button>
+    <button id="back-button-signup" class="w3-button w3-red" onclick="goBackFromSignup()">Back</button>
+  </div>
    <script>
    function goBackFromSignup() {
     document.getElementById('signup-form').style.display = 'none';
@@ -664,10 +667,10 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
  <!-- Withdraw Form -->
  <div class="w3-card w3-margin w3-padding">
     <h3>Withdraw Your Coins</h3>
-    <label for="withdraw-amount">Amount (in Coins, min 1000):</label>
+    <label for="withdraw-amount">Amount (1000 coins = 100 Ruppes):</label>
     <input type="number" id="withdraw-amount" class="w3-input w3-margin-bottom" min="1000" step="1000">
     
-    <label for="withdraw-currency">Select Currency:</label>
+    <label for="withdraw-currency">Select payment method:</label>
     <select id="withdraw-currency" class="w3-select w3-margin-bottom">
       <option value="upi">upi</option>
       <option value="paytm">paytm</option>
