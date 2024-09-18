@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-  // Sign Up Function
+ // Sign Up Function
 document.getElementById('signup-form-inner').addEventListener('submit', async (e) => {
   e.preventDefault();
   
@@ -133,7 +133,7 @@ document.getElementById('signup-form-inner').addEventListener('submit', async (e
     
     // Send verification email
     await sendEmailVerification(user);
-    alert("Verification email sent!");
+    showCustomAlert("Verification email sent!");
 
     // Generate a unique referral code
     const newReferralCode = generateReferralCode();
@@ -152,14 +152,19 @@ document.getElementById('signup-form-inner').addEventListener('submit', async (e
       // Find the user who referred
       const referrerSnap = await getDoc(doc(db, "users", referralCode));
       if (referrerSnap.exists()) {
-        // Update referrer's document to include the new user as a referral
+        // Get referrer's current coin balance
+        const referrerData = referrerSnap.data();
+        const currentCoins = referrerData.coins || 0;
+        
+        // Update referrer's document: Add referral and increment coins
         await updateDoc(doc(db, "users", referrerSnap.id), {
-          referrals: arrayUnion(user.uid) // Add new user ID to the referrer's referral list
+          referrals: arrayUnion(user.uid), // Add new user ID to the referrer's referral list
+          coins: currentCoins + 100 // Add 100 coins for the referrer
         });
       }
     }
   } catch (error) {
-    alert(error.message);
+    showCustomAlert(error.message);
   }
 });
 
@@ -167,6 +172,7 @@ document.getElementById('signup-form-inner').addEventListener('submit', async (e
 function generateReferralCode() {
   return 'REF-' + Math.random().toString(36).substr(2, 9).toUpperCase();
 }
+
     // Login Function
     document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -180,18 +186,18 @@ function generateReferralCode() {
 
     // Check email verification
     if (user.emailVerified) {
-      alert('Logged in successfully!');
+      showCustomAlert('Logged in successfully!');
       // Redirect or update UI
     } else {
       // Email not verified
-      alert('Please verify your email address. A verification email has been sent to you.');
+      showCustomAlert('Please verify your email address. A verification email has been sent to you.');
       await sendEmailVerification(user);
       // Sign out the user
       await signOut(auth);
     }
   } catch (error) {
     console.error('Login error:', error);
-    alert(`Login failed: ${error.message}`);
+    showCustomAlert(`Login failed: ${error.message}`);
   }
 });
 document.getElementById('forgot-password').addEventListener('click', () => {
@@ -199,10 +205,10 @@ document.getElementById('forgot-password').addEventListener('click', () => {
   if (email) {
     sendPasswordResetEmail(auth, email)
       .then(() => {
-        alert('Password reset email sent! Check your inbox.');
+        showCustomAlert('Password reset email sent! Check your inbox.');
       })
       .catch((error) => {
-        alert(error.message);
+        showCustomAlert(error.message);
       });
   }
 });
@@ -293,7 +299,7 @@ function showArticleContent(article, articles) {
 // Start timer for earning coins
 function startReadTimer(articleId) {
   setTimeout(async () => {
-    alert("You've earned 20 coins for reading!");
+    showCustomAlert("You've earned 20 coins for reading!");
     
     // Add coins to user's account
     await updateDoc(doc(db, "users", auth.currentUser.uid), {
@@ -337,7 +343,7 @@ document.getElementById('spin-earn-btn').addEventListener('click', async () => {
 
       if (spinCount < 10) {
         const coinsEarned = Math.floor(Math.random() * 100) + 1; // Earn 1-100 coins
-        alert(`You earned ${coinsEarned} coins!`);
+        showCustomAlert(`You earned ${coinsEarned} coins!`);
 
         // Update Firestore with the new spin data
         await updateDoc(userDocRef, {
@@ -349,11 +355,11 @@ document.getElementById('spin-earn-btn').addEventListener('click', async () => {
         // Update the UI with the remaining chances
         document.getElementById('remaining-spins').innerText = `Remaining Spins: ${9 - spinCount}`;
       } else {
-        alert("You have used all 10 spins for today. Come back tomorrow!");
+        showCustomAlert("You have used all 10 spins for today. Come back tomorrow!");
       }
     }
   } catch (error) {
-    console.error("Error during the spin process: ", error);
+    console.showCustomAlert("Error during the spin process: ", error);
   }
 });
 
@@ -440,7 +446,7 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('withdraw-btn').disabled = false;
       } else {
         document.getElementById('withdraw-btn').disabled = true;
-        alert("Please verify your email address to enable withdrawals.");
+        showCustomAlert("Please verify your email address to enable withdrawals.");
       }
     }
   } else {
@@ -456,12 +462,9 @@ document.getElementById('withdraw-btn').addEventListener('click', async () => {
   const currency = document.getElementById('withdraw-currency').value; // Get selected currency
   const address = document.getElementById('withdraw-address').value; // Get cryptocurrency address
 
-  console.log('Requested Amount:', amount); // Debug: Check if amount is parsed correctly
-  console.log('Available Coins:', userCoins); // Debug: Check the user's coin balance
-
   if (userCoins >= amount) { // Ensure user has enough coins
     if (auth.currentUser.emailVerified) { // Check if the email is verified
-      alert(`You've requested to withdraw ${amount / 1000 * 100} INR in ${currency} to the address: ${address}`);
+      showCustomAlert(`You've requested to withdraw ${amount / 1000 * 100} INR in ${currency} to the address: ${address}`);
 
       // Store the withdrawal request in Firestore
       const withdrawalData = {
@@ -486,16 +489,16 @@ document.getElementById('withdraw-btn').addEventListener('click', async () => {
         userCoins -= amount;
         document.getElementById('coins-balance').innerText = `Coins Balance: ${userCoins}`;
 
-        alert("Withdrawal request submitted successfully!");
+        showCustomAlert("Withdrawal request submitted successfully!");
       } catch (error) {
         console.error("Error processing withdrawal request: ", error);
-        alert("Failed to submit withdrawal request.");
+        showCustomAlert("Failed to submit withdrawal request.");
       }
     } else {
-      alert("Please verify your email address before making a withdrawal.");
+      showCustomAlert("Please verify your email address before making a withdrawal.");
     }
   } else {
-    alert("Not enough coins for withdrawal.");
+    showCustomAlert("Not enough coins for withdrawal.");
   }
 });
 
@@ -510,14 +513,14 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
     const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
     if (lastCheckInDate && lastCheckInDate.toISOString().split('T')[0] === today) {
-      alert("You've already checked in today!");
+      showCustomAlert("You've already checked in today!");
     } else {
       // Update the user's document with the new check-in date and add 50 coins
       await updateDoc(userDocRef, {
         coins: increment(50),
         lastCheckInDate: new Date()
       });
-      alert("You've successfully checked in and earned 50 coins!");
+      showCustomAlert("You've successfully checked in and earned 50 coins!");
       
       // Update the coins balance display
       const updatedDoc = await getDoc(userDocRef);
@@ -527,6 +530,31 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
   }
 });
 
+function shareLink() {
+    const shareUrl = "https://readandearn.vercel.app/"; // The URL you want to share
+
+    // Use Web Share API if supported by the browser
+    if (navigator.share) {
+      navigator.share({
+        title: 'Check out this page!',
+        text: 'I found this page interesting. Take a look!',
+        url: shareUrl
+      }).then(() => {
+        console.log('Page shared successfully');
+      }).catch((error) => {
+        console.log('Error sharing page:', error);
+      });
+    } else {
+      // Fallback: Copy URL to clipboard
+      const textArea = document.createElement("textarea");
+      textArea.value = shareUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      alert("URL copied to clipboard! Share it with your friends.");
+    }
+  }
   </script>
 </head>
 <body class="w3-light-grey">
@@ -566,6 +594,12 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
             <p>Stay tuned for this exciting feature, coming soon! Watch videos and earn rewards effortlessly.</p>
           </div>
         </li>
+        <li>
+          <div id="referral-system" class="tab-content referral-system-content">
+            <h3>Referral System</h3>
+            <p>Invite your friends and earn rewards! Share your unique referral code and receive <strong>100 coins</strong> for every successful sign-up using your code. Track your referrals and watch your rewards grow!</p>
+          </div>
+        </li>        
       </ul>
       <p><strong>Payment Details:</strong> Payments are processed every Saturday and Sunday. Earn and enjoy your rewards!</p>
       <p><strong>Additional information:</strong> If you do not verify your account, you cannot withdraw.</p>
@@ -682,7 +716,15 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
 
     <button id="withdraw-btn" class="w3-button w3-green">Withdraw</button>
   </div>
+  <!-- Share Button -->
+<button class="w3-button w3-blue w3-round w3-hover-light-blue" onclick="shareLink()">
+  Share 
+</button>
 </div>
+<!-- Share Button -->
+
 </div>
+<!-- Alert Notification -->
+
 </body>
 </html>
