@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Earning Website</title>
+  <title>Learn And Earn</title>
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
   <style>
     #pre-login-content {
@@ -133,7 +133,7 @@ document.getElementById('signup-form-inner').addEventListener('submit', async (e
     
     // Send verification email
     await sendEmailVerification(user);
-    ("Verification email sent!");
+    alert("Verification email sent!");
 
     // Generate a unique referral code
     const newReferralCode = generateReferralCode();
@@ -164,7 +164,7 @@ document.getElementById('signup-form-inner').addEventListener('submit', async (e
       }
     }
   } catch (error) {
-    (error.message);
+    alert(error.message);
   }
 });
 
@@ -186,7 +186,7 @@ function generateReferralCode() {
 
     // Check email verification
     if (user.emailVerified) {
-      ('Logged in successfully!');
+      alert('Logged in successfully!');
       // Redirect or update UI
     } else {
       // Email not verified
@@ -694,33 +694,7 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
 <button class="w3-button w3-blue w3-round w3-hover-light-blue" onclick="shareLink()">
   Share 
 </button>
-<script>
-  function shareLink() {
-      const shareUrl = "https://readandearn.vercel.app/"; // The URL you want to share
-  
-      // Use Web Share API if supported by the browser
-      if (navigator.share) {
-        navigator.share({
-          title: 'Check out this page!',
-          text: 'I found this page interesting. Take a look!',
-          url: shareUrl
-        }).then(() => {
-          console.log('Page shared successfully');
-        }).catch((error) => {
-          console.log('Error sharing page:', error);
-        });
-      } else {
-        // Fallback: Copy URL to clipboard
-        const textArea = document.createElement("textarea");
-        textArea.value = shareUrl;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-        alert("URL copied to clipboard! Share it with your friends.");
-      }
-    }
-    </script>
+<script></script>
 </div>
 <!-- Share Button -->
 
@@ -729,4 +703,3 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
 
 </body>
 </html>
-
