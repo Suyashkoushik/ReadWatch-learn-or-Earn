@@ -118,7 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
- // Sign Up Function
+ 
+// Sign Up Function
 document.getElementById('signup-form-inner').addEventListener('submit', async (e) => {
   e.preventDefault();
   
@@ -130,13 +131,15 @@ document.getElementById('signup-form-inner').addEventListener('submit', async (e
     // Create user
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    
+    console.log('User created:', user);
+
     // Send verification email
     await sendEmailVerification(user);
-    alert("Verification email sent!");
+    console.log("Verification email sent!");
 
     // Generate a unique referral code
     const newReferralCode = generateReferralCode();
+    console.log('Generated referral code:', newReferralCode);
 
     // Store user data in Firestore
     const userRef = doc(db, "users", user.uid);
@@ -146,24 +149,33 @@ document.getElementById('signup-form-inner').addEventListener('submit', async (e
       referrals: [],
       referralCode: newReferralCode, // Store the new user's referral code
     });
+    console.log('User data stored in Firestore');
 
     // Handle the referral code if provided
     if (referralCode) {
+      console.log('Referral code provided:', referralCode);
       // Find the user who referred
       const referrerSnap = await getDoc(doc(db, "users", referralCode));
       if (referrerSnap.exists()) {
+        console.log('Referrer found:', referrerSnap.data());
+
         // Get referrer's current coin balance
         const referrerData = referrerSnap.data();
         const currentCoins = referrerData.coins || 0;
+        console.log('Current coins of referrer:', currentCoins);
         
         // Update referrer's document: Add referral and increment coins
         await updateDoc(doc(db, "users", referrerSnap.id), {
           referrals: arrayUnion(user.uid), // Add new user ID to the referrer's referral list
           coins: currentCoins + 100 // Add 100 coins for the referrer
         });
+        console.log('Referrer updated with new referral and coins');
+      } else {
+        console.log('Referrer does not exist');
       }
     }
   } catch (error) {
+    console.error('Error during sign up:', error);
     alert(error.message);
   }
 });
@@ -172,6 +184,7 @@ document.getElementById('signup-form-inner').addEventListener('submit', async (e
 function generateReferralCode() {
   return 'REF-' + Math.random().toString(36).substr(2, 9).toUpperCase();
 }
+
 
     // Login Function
     document.getElementById('login-form').addEventListener('submit', async (e) => {
