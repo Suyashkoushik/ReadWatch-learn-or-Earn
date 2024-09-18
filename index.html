@@ -439,8 +439,7 @@ onAuthStateChanged(auth, async (user) => {
     if (userDoc.exists()) {
       userCoins = userDoc.data().coins || 0;
       document.getElementById('coins-balance').innerText = `Coins Balance: ${userCoins}`;
-      console.log('Fetched userCoins from Firestore:', userCoins); // Debug: Check if coins are fetched
-
+      
       // Check email verification
       if (user.emailVerified) {
         document.getElementById('withdraw-btn').disabled = false;
@@ -530,31 +529,6 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
   }
 });
 
-function shareLink() {
-    const shareUrl = "https://readandearn.vercel.app/"; // The URL you want to share
-
-    // Use Web Share API if supported by the browser
-    if (navigator.share) {
-      navigator.share({
-        title: 'Check out this page!',
-        text: 'I found this page interesting. Take a look!',
-        url: shareUrl
-      }).then(() => {
-        console.log('Page shared successfully');
-      }).catch((error) => {
-        console.log('Error sharing page:', error);
-      });
-    } else {
-      // Fallback: Copy URL to clipboard
-      const textArea = document.createElement("textarea");
-      textArea.value = shareUrl;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      alert("URL copied to clipboard! Share it with your friends.");
-    }
-  }
   </script>
 </head>
 <body class="w3-light-grey">
@@ -720,6 +694,33 @@ function shareLink() {
 <button class="w3-button w3-blue w3-round w3-hover-light-blue" onclick="shareLink()">
   Share 
 </button>
+<script>
+  function shareLink() {
+      const shareUrl = "https://readandearn.vercel.app/"; // The URL you want to share
+  
+      // Use Web Share API if supported by the browser
+      if (navigator.share) {
+        navigator.share({
+          title: 'Check out this page!',
+          text: 'I found this page interesting. Take a look!',
+          url: shareUrl
+        }).then(() => {
+          console.log('Page shared successfully');
+        }).catch((error) => {
+          console.log('Error sharing page:', error);
+        });
+      } else {
+        // Fallback: Copy URL to clipboard
+        const textArea = document.createElement("textarea");
+        textArea.value = shareUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        alert("URL copied to clipboard! Share it with your friends.");
+      }
+    }
+    </script>
 </div>
 <!-- Share Button -->
 
