@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Learn and Earn</title>
+  <title>Earning Website</title>
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
   <style>
     #pre-login-content {
@@ -133,7 +133,7 @@ document.getElementById('signup-form-inner').addEventListener('submit', async (e
     
     // Send verification email
     await sendEmailVerification(user);
-    showCustomAlert("Verification email sent!");
+    ("Verification email sent!");
 
     // Generate a unique referral code
     const newReferralCode = generateReferralCode();
@@ -164,7 +164,7 @@ document.getElementById('signup-form-inner').addEventListener('submit', async (e
       }
     }
   } catch (error) {
-    showCustomAlert(error.message);
+    (error.message);
   }
 });
 
@@ -186,18 +186,18 @@ function generateReferralCode() {
 
     // Check email verification
     if (user.emailVerified) {
-      showCustomAlert('Logged in successfully!');
+      ('Logged in successfully!');
       // Redirect or update UI
     } else {
       // Email not verified
-      showCustomAlert('Please verify your email address. A verification email has been sent to you.');
+      alert('Please verify your email address. A verification email has been sent to you.');
       await sendEmailVerification(user);
       // Sign out the user
       await signOut(auth);
     }
   } catch (error) {
     console.error('Login error:', error);
-    showCustomAlert(`Login failed: ${error.message}`);
+    alert(`Login failed: ${error.message}`);
   }
 });
 document.getElementById('forgot-password').addEventListener('click', () => {
@@ -205,10 +205,10 @@ document.getElementById('forgot-password').addEventListener('click', () => {
   if (email) {
     sendPasswordResetEmail(auth, email)
       .then(() => {
-        showCustomAlert('Password reset email sent! Check your inbox.');
+        alert('Password reset email sent! Check your inbox.');
       })
       .catch((error) => {
-        showCustomAlert(error.message);
+        alert(error.message);
       });
   }
 });
@@ -299,7 +299,7 @@ function showArticleContent(article, articles) {
 // Start timer for earning coins
 function startReadTimer(articleId) {
   setTimeout(async () => {
-    showCustomAlert("You've earned 20 coins for reading!");
+    alert("You've earned 20 coins for reading!");
     
     // Add coins to user's account
     await updateDoc(doc(db, "users", auth.currentUser.uid), {
@@ -343,7 +343,7 @@ document.getElementById('spin-earn-btn').addEventListener('click', async () => {
 
       if (spinCount < 10) {
         const coinsEarned = Math.floor(Math.random() * 100) + 1; // Earn 1-100 coins
-        showCustomAlert(`You earned ${coinsEarned} coins!`);
+        alert(`You earned ${coinsEarned} coins!`);
 
         // Update Firestore with the new spin data
         await updateDoc(userDocRef, {
@@ -355,11 +355,11 @@ document.getElementById('spin-earn-btn').addEventListener('click', async () => {
         // Update the UI with the remaining chances
         document.getElementById('remaining-spins').innerText = `Remaining Spins: ${9 - spinCount}`;
       } else {
-        showCustomAlert("You have used all 10 spins for today. Come back tomorrow!");
+        alert("You have used all 10 spins for today. Come back tomorrow!");
       }
     }
   } catch (error) {
-    console.showCustomAlert("Error during the spin process: ", error);
+    console.alert("Error during the spin process: ", error);
   }
 });
 
@@ -445,7 +445,7 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('withdraw-btn').disabled = false;
       } else {
         document.getElementById('withdraw-btn').disabled = true;
-        showCustomAlert("Please verify your email address to enable withdrawals.");
+        alert("Please verify your email address to enable withdrawals.");
       }
     }
   } else {
@@ -463,7 +463,7 @@ document.getElementById('withdraw-btn').addEventListener('click', async () => {
 
   if (userCoins >= amount) { // Ensure user has enough coins
     if (auth.currentUser.emailVerified) { // Check if the email is verified
-      showCustomAlert(`You've requested to withdraw ${amount / 1000 * 100} INR in ${currency} to the address: ${address}`);
+      alert(`You've requested to withdraw ${amount / 1000 * 100} INR in ${currency} to the address: ${address}`);
 
       // Store the withdrawal request in Firestore
       const withdrawalData = {
@@ -488,16 +488,16 @@ document.getElementById('withdraw-btn').addEventListener('click', async () => {
         userCoins -= amount;
         document.getElementById('coins-balance').innerText = `Coins Balance: ${userCoins}`;
 
-        showCustomAlert("Withdrawal request submitted successfully!");
+        alert("Withdrawal request submitted successfully!");
       } catch (error) {
         console.error("Error processing withdrawal request: ", error);
-        showCustomAlert("Failed to submit withdrawal request.");
+        alert("Failed to submit withdrawal request.");
       }
     } else {
-      showCustomAlert("Please verify your email address before making a withdrawal.");
+      alert("Please verify your email address before making a withdrawal.");
     }
   } else {
-    showCustomAlert("Not enough coins for withdrawal.");
+    alert("Not enough coins for withdrawal.");
   }
 });
 
@@ -512,14 +512,14 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
     const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
     if (lastCheckInDate && lastCheckInDate.toISOString().split('T')[0] === today) {
-      showCustomAlert("You've already checked in today!");
+      alert("You've already checked in today!");
     } else {
       // Update the user's document with the new check-in date and add 50 coins
       await updateDoc(userDocRef, {
         coins: increment(50),
         lastCheckInDate: new Date()
       });
-      showCustomAlert("You've successfully checked in and earned 50 coins!");
+      alert("You've successfully checked in and earned 50 coins!");
       
       // Update the coins balance display
       const updatedDoc = await getDoc(userDocRef);
@@ -729,3 +729,4 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
 
 </body>
 </html>
+
