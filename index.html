@@ -58,6 +58,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = firebase.storage();
 
     // Blogger API settings
     const blogId = "5620342872214603610";
@@ -419,10 +420,8 @@ onAuthStateChanged(auth, async (user) => {
 
 // Add event listeners for the buttons
 document.addEventListener('DOMContentLoaded', () => {
-  // Watch and Earn button
-  document.getElementById('watch-earn-btn').addEventListener('click', () => {
-    fetchYouTubeVideos('comeing soon....'); // Show videos
-  });
+  document.getElementById('watch-earn-btn').addEventListener('click', fetchYouTubeVideos);
+  document.getElementById('share-btn').addEventListener('click', shareLink);
 
   // Read and Earn button
   document.getElementById('read-earn-btn').addEventListener('click', () => {
@@ -572,6 +571,108 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
   }
 });
 
+// Function to fetch videos from Firestore
+const fetchYouTubeVideos = async () => {
+    const userId = auth.currentUser.uid;
+    const watchedVideosRef = db.collection("users").doc(userId).collection("watchedVideos");
+
+    // Fetch watched videos
+    const watchedVideoDocs = await watchedVideosRef.get();
+    const watchedVideos = watchedVideoDocs.docs.map(doc => doc.id);
+
+    // Fetch available videos from Firestore
+    const videosSnapshot = await db.collection("videos").get();
+    const videosToShow = [];
+
+    videosSnapshot.forEach(doc => {
+        const videoData = doc.data();
+        if (!watchedVideos.includes(doc.id)) {
+            videosToShow.push({
+                id: doc.id,
+                title: videoData.title,
+                duration: videoData.duration,
+                storagePath: videoData.storagePath
+            });
+        }
+    });
+
+    if (videosToShow.length === 0) {
+        document.getElementById('videos').innerText = "No new videos available.";
+        return;
+    }
+
+    videosToShow.forEach(video => {
+        const videoElement = document.createElement('div');
+        videoElement.innerHTML = `
+            <h4>${video.title}</h4>
+            <button onclick="watchVideo('${video.id}', ${video.duration})">Watch</button>
+        `;
+        document.getElementById('videos').appendChild(videoElement);
+    });
+};
+
+// Function to watch video and earn coins
+const watchVideo = async (videoId, videoDuration) => {
+    const userId = auth.currentUser.uid;
+    const coinsEarned = Math.floor((videoDuration / 10) * 400); // 400 coins for 10 min
+
+    const userDocRef = db.collection("users").doc(userId);
+    
+    // Update user coins and log watched video
+    await userDocRef.update({
+        coins: firebase.firestore.FieldValue.increment(coinsEarned)
+    });
+    
+    await userDocRef.collection("watchedVideos").doc(videoId).set({});
+    
+    showMessage(`You earned ${coinsEarned} coins for watching ${videoId}!`, 'w3-green');
+};
+
+// Share functionality
+const shareLink = async () => {
+    const userId = auth.currentUser.uid;
+    const userDocRef = db.collection("users").doc(userId);
+    const userDoc = await userDocRef.get();
+
+    let shareCount = userDoc.exists() ? userDoc.data().shareCount || 0 : 0;
+
+    // Open WhatsApp share link
+    const url = encodeURIComponent("https://readandearn.vercel.app/");
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${url}`;
+    window.open(whatsappUrl, '_blank');
+
+    // Increment share count
+    shareCount += 1;
+    await userDocRef.set({ shareCount }, { merge: true });
+
+    // Check if the user has shared in 10 groups
+    if (shareCount >= 10) {
+        await userDocRef.update({
+            coins: firebase.firestore.FieldValue.increment(100) // Reward for sharing
+        });
+        showMessage("You earned 100 bonus coins for sharing the link in 10 groups!", 'w3-green');
+    }
+};
+
+// Show message function
+const showMessage = (message, type) => {
+    const messageBox = document.getElementById('message-box');
+    messageBox.innerText = message;
+    messageBox.className = `w3-panel ${type}`;
+    messageBox.style.display = 'block';
+
+    setTimeout(() => {
+        messageBox.style.display = 'none';
+    }, 4000);
+};
+
+// Add event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('watch-earn-btn').addEventListener('click', fetchYouTubeVideos);
+    document.getElementById('share-btn').addEventListener('click', shareLink);
+});
+
+
   </script>
 </head>
 <body class="w3-light-grey">
@@ -711,11 +812,14 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
  <div id="other-content" class="w3-container"></div>
 
   <!-- Video Container -->
- <div class="w3-container">
- 
-  <div id="videos" class="w3-margin-top"></div>
-  <div id="video-content"></div>
- </div>
+  <div class="w3-container">
+    <button id="watch-earn-btn" class="w3-button w3-blue">Watch and Earn</button>
+    <button id="share-btn" class="w3-button w3-teal">Share</button>
+    <div id="message-box" class="w3-panel" style="display: none;"></div>
+    <div id="videos" class="w3-margin-top"></div>
+    <div id="video-content"></div>
+</div>
+
 
  <!-- Withdraw Form -->
  <div class="w3-card w3-margin w3-padding">
@@ -735,16 +839,8 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
 
     <button id="withdraw-btn" class="w3-button w3-green">Withdraw</button>
   </div>
-  <!-- Share Button -->
-<button class="w3-button w3-blue w3-round w3-hover-light-blue" onclick="shareLink()">
-  Share 
-</button>
-<script></script>
 </div>
-<!-- Share Button -->
 
 </div>
-<!-- Alert Notification -->
-
 </body>
 </html>
