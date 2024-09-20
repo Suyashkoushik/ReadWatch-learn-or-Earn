@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Learn And Earn</title>
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <!--Ads-->
   <meta name='admaven-placement' content=Bqdw7rjnE>
   <script data-cfasync="false" src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1095364"></script>
   <script data-cfasync="false" src="/sw.js"></script>
@@ -37,7 +38,6 @@
       left: 20px;
       z-index: 1000;
     } </style>
-  <!-- Bidvertiser2095432 -->
   <script type="module">
     // Import Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
@@ -341,11 +341,22 @@ function getTodayDate() {
   const today = new Date();
   return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
 }
-
 document.getElementById('spin-earn-btn').addEventListener('click', async () => {
   try {
     const userDocRef = doc(db, "users", auth.currentUser.uid);
     const userDoc = await getDoc(userDocRef);
+
+    const showMessage = (message, type) => {
+      const messageBox = document.getElementById('message-box');
+      messageBox.innerText = message;
+      messageBox.className = `w3-panel ${type}`; // Set class to change color/style based on type
+      messageBox.style.display = 'block';
+
+      // Hide the message after 4 seconds
+      setTimeout(() => {
+        messageBox.style.display = 'none';
+      }, 4000);
+    };
 
     if (userDoc.exists()) {
       const userData = userDoc.data();
@@ -363,7 +374,7 @@ document.getElementById('spin-earn-btn').addEventListener('click', async () => {
 
       if (spinCount < 10) {
         const coinsEarned = Math.floor(Math.random() * 100) + 1; // Earn 1-100 coins
-        alert(`You earned ${coinsEarned} coins!`);
+        showMessage(`You earned ${coinsEarned} coins!`, 'w3-green'); // Green for success
 
         // Update Firestore with the new spin data
         await updateDoc(userDocRef, {
@@ -375,11 +386,11 @@ document.getElementById('spin-earn-btn').addEventListener('click', async () => {
         // Update the UI with the remaining chances
         document.getElementById('remaining-spins').innerText = `Remaining Spins: ${9 - spinCount}`;
       } else {
-        alert("You have used all 10 spins for today. Come back tomorrow!");
+        showMessage("You have used all 10 spins for today. Come back tomorrow!", 'w3-red'); // Red for limit reached
       }
     }
   } catch (error) {
-    console.alert("Error during the spin process: ", error);
+    showMessage("Error during the spin process: " + error.message, 'w3-red'); // Red for error
   }
 });
 
@@ -521,10 +532,21 @@ document.getElementById('withdraw-btn').addEventListener('click', async () => {
   }
 });
 
-// Check in the user and grant 50 coins if they haven't checked in today
 document.getElementById('daily-check-btn').addEventListener('click', async () => {
   const userDocRef = doc(db, "users", auth.currentUser.uid);
   const userDoc = await getDoc(userDocRef);
+
+  const showMessage = (message, type) => {
+    const messageBox = document.getElementById('message-box');
+    messageBox.innerText = message;
+    messageBox.className = `w3-panel ${type}`; // Set the class to change color/style based on type
+    messageBox.style.display = 'block';
+
+    // Hide the message after 4 seconds
+    setTimeout(() => {
+      messageBox.style.display = 'none';
+    }, 4000);
+  };
 
   if (userDoc.exists()) {
     const userData = userDoc.data();
@@ -532,15 +554,16 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
     const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
     if (lastCheckInDate && lastCheckInDate.toISOString().split('T')[0] === today) {
-      alert("You've already checked in today!");
+      showMessage("You've already checked in today!", 'w3-red'); // Red for error
     } else {
       // Update the user's document with the new check-in date and add 50 coins
       await updateDoc(userDocRef, {
         coins: increment(50),
         lastCheckInDate: new Date()
       });
-      alert("You've successfully checked in and earned 50 coins!");
-      
+
+      showMessage("You've successfully checked in and earned 50 coins!", 'w3-green'); // Green for success
+
       // Update the coins balance display
       const updatedDoc = await getDoc(userDocRef);
       const updatedCoins = updatedDoc.data().coins || 0;
@@ -678,6 +701,8 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
     <button id="spin-earn-btn" class="w3-bar-item w3-button">Spin and Earn</button>
     <button id="watch-earn-btn" class="w3-bar-item w3-button">Watch and Earn</button>
   </div>
+  <div id="message-box" class="w3-panel w3-green" style="display:none;"></div>
+  
 
   <!-- Article List for Read and Earn -->
   <div id="articles" class="w3-container w3-margin"></div>
