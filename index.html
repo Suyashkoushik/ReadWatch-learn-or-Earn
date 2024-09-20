@@ -58,7 +58,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    
+    const storage = firebase.storage();
 
     // Blogger API settings
     const blogId = "5620342872214603610";
@@ -571,112 +571,6 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
   }
 });
 
-// Function to fetch videos from Firestore
-const fetchYouTubeVideos = async () => {
-    const userId = auth.currentUser.uid;
-    const watchedVideosRef = db.collection("users").doc(userId).collection("watchedVideos");
-
-    // Fetch watched videos
-    const watchedVideoDocs = await watchedVideosRef.get();
-    const watchedVideos = watchedVideoDocs.docs.map(doc => doc.id);
-
-    // Fetch available videos from Firestore
-    const videosSnapshot = await db.collection("videos").get();
-    const videosToShow = [];
-
-    videosSnapshot.forEach(doc => {
-        const videoData = doc.data();
-        if (!watchedVideos.includes(doc.id)) {
-            videosToShow.push({
-                id: doc.id,
-                title: videoData.title,
-                duration: videoData.duration,
-                storagePath: videoData.storagePath
-            });
-        }
-    });
-
-    if (videosToShow.length === 0) {
-        document.getElementById('videos').innerText = "No new videos available.";
-        return;
-    }
-
-    videosToShow.forEach(video => {
-        const videoElement = document.createElement('div');
-        videoElement.innerHTML = `
-            <h4>${video.title}</h4>
-            <button onclick="watchVideo('${video.id}', ${video.duration})">Watch</button>
-        `;
-        document.getElementById('videos').appendChild(videoElement);
-    });
-};
-
-// Function to watch video and earn coins
-const watchVideo = async (videoId, videoDuration) => {
-    const userId = auth.currentUser.uid;
-    const coinsEarned = Math.floor((videoDuration / 10) * 400); // 400 coins for 10 min
-
-    const userDocRef = db.collection("users").doc(userId);
-    
-    // Update user coins and log watched video
-    await userDocRef.update({
-        coins: firebase.firestore.FieldValue.increment(coinsEarned)
-    });
-    
-    await userDocRef.collection("watchedVideos").doc(videoId).set({});
-    
-    showMessage(`You earned ${coinsEarned} coins for watching ${videoId}!`, 'w3-green');
-};
-
-// Share link function
-const shareLink = async () => {
-    const userId = auth.currentUser.uid; // Get the current user's ID
-    const link = "https://readandearn.vercel.app/"; // Your static URL
-    const userDocRef = doc(db, "users", userId);
-
-    try {
-        // Fetch user data to track how many times they've shared the link
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) {
-            console.error("User document not found.");
-            return;
-        }
-
-        // Logic to track shared links, if necessary
-        const userData = userDoc.data();
-        const sharedCount = userData.sharedCount || 0;
-
-        // Check if the user has shared the link at least 10 times
-        if (sharedCount >= 10) {
-            showMessage("You can only share the link 10 times.", 'w3-red');
-            return;
-        }
-
-        // Logic to share the link
-        const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(link)}`;
-        window.open(whatsappShareUrl, '_blank');
-
-        // Update the user's shared count
-        await updateDoc(userDocRef, { sharedCount: sharedCount + 1 });
-        
-        showMessage(`You have successfully shared the link! Total shares: ${sharedCount + 1}`, 'w3-green');
-    } catch (error) {
-        console.error("Error sharing link:", error);
-        showMessage("Error sharing link. Please try again.", 'w3-red');
-    }
-};
-
-// Show message function
-const showMessage = (message, type) => {
-    const messageBox = document.getElementById('message-box');
-    messageBox.innerText = message;
-    messageBox.className = `w3-panel ${type}`;
-    messageBox.style.display = 'block';
-
-    setTimeout(() => {
-        messageBox.style.display = 'none';
-    }, 4000);
-};
 
   </script>
 </head>
@@ -817,13 +711,7 @@ const showMessage = (message, type) => {
  <div id="other-content" class="w3-container"></div>
 
   <!-- Video Container -->
-  <div class="w3-container">
-    <button id="watch-earn-btn" class="w3-button w3-blue">Watch and Earn</button>
-    <button id="share-link-btn" class="w3-button w3-green">Share Link</button>
-    <div id="message-box" class="w3-panel" style="display: none;"></div>
-    <div id="videos" class="w3-margin-top"></div>
-    <div id="video-content"></div>
-</div>
+  
 
 
  <!-- Withdraw Form -->
@@ -849,3 +737,4 @@ const showMessage = (message, type) => {
 </div>
 </body>
 </html>
+
