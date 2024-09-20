@@ -628,29 +628,41 @@ const watchVideo = async (videoId, videoDuration) => {
     showMessage(`You earned ${coinsEarned} coins for watching ${videoId}!`, 'w3-green');
 };
 
-// Share functionality
+// Share link function
 const shareLink = async () => {
-    const userId = auth.currentUser.uid;
-    const userDocRef = db.collection("users").doc(userId);
-    const userDoc = await userDocRef.get();
+    const userId = auth.currentUser.uid; // Get the current user's ID
+    const link = "https://readandearn.vercel.app/"; // Your static URL
+    const userDocRef = doc(db, "users", userId);
 
-    let shareCount = userDoc.exists() ? userDoc.data().shareCount || 0 : 0;
+    try {
+        // Fetch user data to track how many times they've shared the link
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+            console.error("User document not found.");
+            return;
+        }
 
-    // Open WhatsApp share link
-    const url = encodeURIComponent("https://readandearn.vercel.app/");
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${url}`;
-    window.open(whatsappUrl, '_blank');
+        // Logic to track shared links, if necessary
+        const userData = userDoc.data();
+        const sharedCount = userData.sharedCount || 0;
 
-    // Increment share count
-    shareCount += 1;
-    await userDocRef.set({ shareCount }, { merge: true });
+        // Check if the user has shared the link at least 10 times
+        if (sharedCount >= 10) {
+            showMessage("You can only share the link 10 times.", 'w3-red');
+            return;
+        }
 
-    // Check if the user has shared in 10 groups
-    if (shareCount >= 10) {
-        await userDocRef.update({
-            coins: firebase.firestore.FieldValue.increment(100) // Reward for sharing
-        });
-        showMessage("You earned 100 bonus coins for sharing the link in 10 groups!", 'w3-green');
+        // Logic to share the link
+        const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(link)}`;
+        window.open(whatsappShareUrl, '_blank');
+
+        // Update the user's shared count
+        await updateDoc(userDocRef, { sharedCount: sharedCount + 1 });
+        
+        showMessage(`You have successfully shared the link! Total shares: ${sharedCount + 1}`, 'w3-green');
+    } catch (error) {
+        console.error("Error sharing link:", error);
+        showMessage("Error sharing link. Please try again.", 'w3-red');
     }
 };
 
@@ -665,13 +677,6 @@ const showMessage = (message, type) => {
         messageBox.style.display = 'none';
     }, 4000);
 };
-
-// Add event listeners
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('watch-earn-btn').addEventListener('click', fetchYouTubeVideos);
-    document.getElementById('share-btn').addEventListener('click', shareLink);
-});
-
 
   </script>
 </head>
@@ -814,7 +819,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <!-- Video Container -->
   <div class="w3-container">
     <button id="watch-earn-btn" class="w3-button w3-blue">Watch and Earn</button>
-    <button id="share-btn" class="w3-button w3-teal">Share</button>
+    <button id="share-link-btn" class="w3-button w3-green">Share Link</button>
     <div id="message-box" class="w3-panel" style="display: none;"></div>
     <div id="videos" class="w3-margin-top"></div>
     <div id="video-content"></div>
