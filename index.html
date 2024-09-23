@@ -329,10 +329,11 @@ document.getElementById('read-earn-btn').addEventListener('click', () => {
 });
 
     // Spin and Earn (Random Coin Function)
-   // Utility function to get today's date in a simple format
- // Initialize share count
- let shareCount = 0;
   
+ 
+  // Initialize share count
+  let shareCount = 0;
+
   // URL to be shared
   const shareURL = 'https://readandearn.vercel.app/';
 
@@ -344,7 +345,7 @@ document.getElementById('read-earn-btn').addEventListener('click', () => {
       
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        shareCount = userData.shareCount || 0;
+        shareCount = userData.shareCount || 0; // Fetch latest share count from Firestore
         document.getElementById('share-message').innerText = `Shared in ${shareCount} group(s). Share in at least 10 groups to enable Spin and Earn.`;
 
         // Enable the spin button if share count is already 10 or more
@@ -364,6 +365,9 @@ document.getElementById('read-earn-btn').addEventListener('click', () => {
   async function shareOnWhatsApp() {
     const whatsappShareLink = `https://api.whatsapp.com/send?text=Check out this amazing site: ${shareURL}`;
     window.open(whatsappShareLink, '_blank');
+
+    // Fetch the latest share count from Firestore to ensure the updated count
+    await fetchShareCount();
 
     // Increment local share count
     shareCount++;
@@ -389,6 +393,56 @@ document.getElementById('read-earn-btn').addEventListener('click', () => {
   // Share button click event
   document.getElementById('share-btn').addEventListener('click', shareOnWhatsApp);
 
+  // Spin and Earn button (this function will be blocked until sharing is done)
+  document.getElementById('spin-earn-btn').addEventListener('click', async () => {
+    // Fetch the latest share count before the spin action to ensure correctness
+    await fetchShareCount();
+
+    if (shareCount < 10) {
+      showMessage("Please share in at least 10 WhatsApp groups to spin and earn.", 'w3-red'); // Show warning if the user tries to spin early
+      return; // Block the spin if not enough shares
+    }
+
+    try {
+      const userDocRef = doc(db, "users", auth.currentUser.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const today = getTodayDate();
+
+        // Initialize spin data if not present
+        let lastSpinDate = userData.lastSpinDate || "";
+        let spinCount = userData.spinCount || 0;
+
+        // Reset spin count if the date has changed
+        if (lastSpinDate !== today) {
+          spinCount = 0;
+          lastSpinDate = today;
+        }
+
+        if (spinCount < 10) {
+          const coinsEarned = Math.floor(Math.random() * 100) + 1; // Earn 1-100 coins
+          showMessage(`You earned ${coinsEarned} coins!`, 'w3-green'); // Green for success
+
+          // Update Firestore with the new spin data
+          await updateDoc(userDocRef, {
+            coins: increment(coinsEarned),
+            lastSpinDate: today,
+            spinCount: increment(1)
+          });
+
+          // Update the UI with the remaining chances
+          document.getElementById('remaining-spins').innerText = `Remaining Spins: ${9 - spinCount}`;
+        } else {
+          showMessage("You have used all 10 spins for today. Come back tomorrow!", 'w3-red'); // Red for limit reached
+        }
+      }
+    } catch (error) {
+      showMessage("Error during the spin process: " + error.message, 'w3-red'); // Red for error
+    }
+  });
+
   // Utility function to show messages
   const showMessage = (message, type) => {
     const messageBox = document.getElementById('message-box');
@@ -401,6 +455,13 @@ document.getElementById('read-earn-btn').addEventListener('click', () => {
       messageBox.style.display = 'none';
     }, 4000);
   };
+
+  // Utility function to get today's date in a simple format
+  function getTodayDate() {
+    const today = new Date();
+    return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  }
+
 
   // Spin and Earn button (this function will be blocked until sharing is done)
   document.getElementById('spin-earn-btn').addEventListener('click', async () => {
@@ -803,3 +864,4 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
 
 </body>
 </html>
+
