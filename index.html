@@ -372,9 +372,7 @@ document.getElementById('read-earn-btn').addEventListener('click', () => {
           document.getElementById('spin-earn-btn').disabled = false;
         }
       }
-    } catch (error) {
-     
-    }
+    } catch (error) {}
   }
 
   // Call fetchShareCount when the page loads
@@ -558,7 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Spin and Earn button
   document.getElementById('spin-earn-btn').addEventListener('click', () => {
-    showOtherContent('Spinning...'); // Show spin content
+    showalert('Spinning...'); // Show spin content
   });
 
   // Daily Check button
@@ -569,21 +567,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Function to show other content (Read and Earn, Spin and Earn, etc.)
 function showOtherContent(content) {
-  const otherContent = document.getElementById('other-content');
+  
   const articlesContainer = document.getElementById('articles');
 
   // Hide video container and articles container by default
   articlesContainer.style.display = 'none';
-  otherContent.style.display = 'block';
 
   // Show articles for 'Read and Earn'
   if (content === 'read') {
-    otherContent.style.display = 'none'; // Hide other content
     articlesContainer.style.display = 'block'; // Show articles
     articlesContainer.innerHTML = `<div class="w3-card w3-margin w3-padding">List of articles for reading...</div>`;
   } else {
     // For other content, hide articles and show general content
-    otherContent.innerHTML = `<div class="w3-card w3-margin w3-padding">${content}</div>`;
   }
 }
 
