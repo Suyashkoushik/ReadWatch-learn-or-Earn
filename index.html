@@ -632,12 +632,17 @@ auth.onAuthStateChanged(async (user) => {
   }
 });
 
-// Event listener for "Verify Email" button
 document.getElementById('verify-email-btn').addEventListener('click', async () => {
   const user = auth.currentUser;
+  
+  // Reload the user object to ensure it's up to date
+  await user.reload();
+  
   if (user && !user.emailVerified) {
     try {
+      // Send the verification email
       await user.sendEmailVerification();
+
       showMessage('Verification email sent! Please check your inbox.', 'w3-blue');
     } catch (error) {
       console.error("Error sending verification email: ", error);
@@ -645,7 +650,6 @@ document.getElementById('verify-email-btn').addEventListener('click', async () =
     }
   }
 });
-
 // Withdrawal button click event
 document.getElementById('withdraw-btn').addEventListener('click', async () => {
   const amount = parseInt(document.getElementById('withdraw-amount').value); // Get withdrawal amount
@@ -693,8 +697,6 @@ document.getElementById('withdraw-btn').addEventListener('click', async () => {
 });
 
 // Utility function to display custom messages
-
-
 
 
 document.getElementById('daily-check-btn').addEventListener('click', async () => {
