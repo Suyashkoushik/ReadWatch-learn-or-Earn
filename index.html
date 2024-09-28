@@ -879,24 +879,31 @@ document.getElementById('daily-check-btn').addEventListener('click', async () =>
     <p id="share-message"></p> 
   
 
- <!-- Withdraw Form -->
- <div class="w3-card w3-margin w3-padding">
-    <h3>Withdraw Your Coins</h3>
-    <label for="withdraw-amount">Amount (1000 coins = 100 Ruppes):</label>
-    <input type="number" id="withdraw-amount" class="w3-input w3-margin-bottom" min="1000" step="1000">
-    
-    <label for="withdraw-currency">Select payment method:</label>
-    <select id="withdraw-currency" class="w3-select w3-margin-bottom">
-      <option value="upi">upi</option>
-      <option value="paytm">paytm</option>
-      <option value="phonepay">phonepay</option>
-    </select>
+<!-- Withdraw Form -->
+<div class="w3-card w3-margin w3-padding">
+  <h3>Withdraw Your Coins</h3>
 
-    <label for="withdraw-address">Enter payment id:</label>
-    <input type="text" id="withdraw-address" class="w3-input w3-margin-bottom" placeholder="Enter your payment address" required>
+  <label for="withdraw-amount">Select Amount (1000 coins = 100 Rupees):</label>
+  <select id="withdraw-amount" class="w3-select w3-margin-bottom">
+    <option value="500">500 coins</option>
+    <option value="700">700 coins</option>
+    <option value="1000">1000 coins</option>
+    <option value="5000">5000 coins</option>
+  </select>
 
-    <button id="withdraw-btn" class="w3-button w3-green">Withdraw</button>
-  </div>
+  <label for="withdraw-currency">Select payment method:</label>
+  <select id="withdraw-currency" class="w3-select w3-margin-bottom">
+    <option value="upi">upi</option>
+    <option value="paytm">paytm</option>
+    <option value="phonepay">phonepay</option>
+  </select>
+
+  <label for="withdraw-address">Enter payment ID:</label>
+  <input type="text" id="withdraw-address" class="w3-input w3-margin-bottom" placeholder="Enter your payment address" required>
+
+  <button id="withdraw-btn" class="w3-button w3-green">Withdraw</button>
+</div>
+
   <!-- Verify Email Button (Initially Hidden) -->
 <button id="verify-email-btn" class="w3-button w3-blue" style="display: none;">Verify Email</button>
 <!-- Message Box for Notifications -->
