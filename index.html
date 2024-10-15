@@ -249,7 +249,8 @@
                 .then((userCredential) => {
                     showMessage('Sign up successful!');
                     closePopup('signup-popup');
-                    // You can also save the user data to Firestore here if needed
+                     document.getElementById('earning-options').style.display = 'block'; // Show earning options
+                    document.getElementById('before-login').style.display = 'none'; // Hide before-login section
                 })
                 .catch((error) => {
                     showMessage(error.message);
