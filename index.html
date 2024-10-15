@@ -60,6 +60,38 @@
             transform: translate(-50%, -50%);
             z-index: 20;
         }
+        
+.button {
+    background-color: #1e90ff; /* Neon blue */
+    color: #ffffff;
+    border: none;
+    padding: 15px 30px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 5px #1e90ff, 0 0 10px #ff1493; /* Glow effect */
+}
+
+.button:hover {
+    background-color: #ff1493; /* Change to pink on hover */
+    box-shadow: 0 0 10px #14d0ff, 0 0 20px #ffffff; /* Intensify glow on hover */
+}
+
+.card {
+    background-color: #1f1f1f; /* Dark card background */
+    border: 1px solid #1e90ff; /* Blue border */
+    padding: 20px;
+    margin: 20px;
+    box-shadow: 0 0 10px #ff1493, 0 0 20px #1e90ff; /* Glow effect */
+}
+
+.glow-text {
+    color: #ffffff;
+    text-shadow: 0 0 5px #14c8ff, 0 0 10px #1e90ff; /* Glow effect */
+}
     </style>
 </head>
 <body>
@@ -86,12 +118,26 @@
     <!-- Earning options (only visible after login) -->
     <div class="w3-container w3-padding-16" id="earning-options">
         <h2 class="neon-text">Earning Options</h2>
-        <button class="w3-button w3-neon w3-margin" onclick="openPopup('referral-popup')">Share Referral Code</button>
-        <button class="w3-button w3-neon w3-margin" onclick="window.location.href='daily-checkin.html'">Daily Check-In</button>
-        <button class="w3-button w3-neon w3-margin" onclick="window.location.href='spin-to-earn.html'">Spin to Earn</button>
-        <button class="w3-button w3-neon w3-margin" onclick="window.location.href='read-and-earn.html'">Read and Earn</button>
-        <button class="w3-button w3-neon w3-margin" onclick="window.location.href='watch-and-earn.html'">Watch and Earn</button>
-        <button class="w3-button w3-neon w3-margin" id="withdraw-btn" style="display: none;" onclick="window.location.href='withdraw.html'">Withdraw</button>
+        <div class="card" >
+            <h2 class="glow-text">Daily check in</h2>
+             <button class="button" onclick="openPopup('referral-popup')">Share Referral Code</button>
+            </div>
+            <div class="card" >
+                <h2 class="glow-text">Daily check in</h2>
+                  <button class="button" onclick="window.location.href='daily-checkin.html'">Daily Check-In</button>
+                </div> <div class="card" >
+                    <h2 class="glow-text">Daily check in</h2>
+                    <button class="button" onclick="window.location.href='spin-to-earn.html'">Spin to Earn</button>
+                    </div> <div class="card" >
+                        <h2 class="glow-text">Daily check in</h2>
+                        <button class="button" onclick="window.location.href='read-and-earn.html'">Read and Earn</button>
+                        </div> <div class="card" >
+                            <h2 class="glow-text">Daily check in</h2>
+                            <button class="button" onclick="window.location.href='watch-and-earn.html'">Watch and Earn</button>
+                            </div> <div class="card" >
+                                <h2 class="glow-text">Daily check in</h2>
+                                <button class="button" id="withdraw-btn" style="display: none;" onclick="window.location.href='withdraw.html'">Withdraw</button>
+                                </div>
     </div>
 
     <!-- Login Popup -->
@@ -154,7 +200,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, updateDoc, getDoc, addDoc, increment, collection, arrayUnion } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
-
+    
         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCo-22CK4Dg3xxzMHhC8bT9h_54DTSQjfI",
@@ -164,17 +210,17 @@
             messagingSenderId: "557093188815",
             appId: "1:557093188815:web:6fb3c6325e7cf39d73b3ba"
         };
-
+    
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
+    
         // Function to handle user login
         window.loginUser = function() {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
-
+    
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     // Show success message in popup
@@ -187,13 +233,13 @@
                     showMessage(error.message);
                 });
         };
-
+    
         // Function to handle user sign up
         window.signUpUser = function() {
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
             const referralCode = document.getElementById('referral-code').value;
-
+    
             createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     showMessage('Sign up successful!');
@@ -204,7 +250,7 @@
                     showMessage(error.message);
                 });
         };
-
+    
         // Function to handle user logout
         window.logoutUser = function() {
             signOut(auth).then(() => {
@@ -215,17 +261,17 @@
                 showMessage(error.message);
             });
         };
-
+    
         // Function to open popups
         window.openPopup = function(popupId) {
             document.getElementById(popupId).style.display = 'block';
         };
-
+    
         // Function to close popups
         window.closePopup = function(popupId) {
             document.getElementById(popupId).style.display = 'none';
         };
-
+    
         // Function to send password reset email
         window.sendPasswordReset = function() {
             const email = document.getElementById('forgot-password-email').value;
@@ -238,13 +284,13 @@
                     showMessage(error.message);
                 });
         };
-
+    
         // Function to display messages in popup
         function showMessage(message) {
             document.getElementById('message-text').textContent = message;
             openPopup('message-popup');
         }
-
+    
         // Auth state observer
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -266,14 +312,14 @@
                 document.getElementById('signup-btn').style.display = 'block'; // Show signup button
             }
         });
-
+    
         // Additional functions for referral history, email verification, and referral code
-        function viewReferralHistory() {
+        window.viewReferralHistory = function() {
             // Implement referral history logic here
             showMessage('Referral history functionality not implemented yet.');
-        }
-
-        function verifyEmail() {
+        };
+    
+        window.verifyEmail = function() {
             const user = auth.currentUser;
             if (user) {
                 sendEmailVerification(user).then(() => {
@@ -282,14 +328,15 @@
                     showMessage(error.message);
                 });
             }
-        }
-
-        function enterReferralCode() {
+        };
+    
+        window.enterReferralCode = function() {
             const referralCode = document.getElementById('enter-referral-input').value;
             // Add logic to handle the referral code (e.g., store it in Firestore)
             showMessage(`Referral code ${referralCode} entered!`);
             closePopup('profile-popup');
-        }
+        };
     </script>
+    
 </body>
 </html>
