@@ -48,6 +48,18 @@
             background-color: #00ffff !important;
             color: #111 !important;
         }
+
+        #message-popup {
+            display: none;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ffff;
+            padding: 15px;
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+        }
     </style>
 </head>
 <body>
@@ -90,6 +102,7 @@
         <button class="w3-button w3-neon" onclick="loginUser()">Login</button>
         <button class="w3-button w3-neon" onclick="openPopup('forgot-password-popup')">Forgot Password?</button>
         <button onclick="closePopup('login-popup')" class="w3-button w3-neon">Close</button>
+        <div id="login-message" class="neon-text" style="display: none;"></div>
     </div>
 
     <!-- Forgot Password Popup -->
@@ -98,6 +111,7 @@
         <input class="w3-input w3-margin-bottom" type="email" id="forgot-password-email" placeholder="Enter your email" required>
         <button class="w3-button w3-neon" onclick="sendPasswordReset()">Send Reset Email</button>
         <button onclick="closePopup('forgot-password-popup')" class="w3-button w3-neon">Close</button>
+        <div id="forgot-message" class="neon-text" style="display: none;"></div>
     </div>
 
     <!-- Sign Up Popup -->
@@ -108,15 +122,17 @@
         <input class="w3-input w3-margin-bottom" type="text" id="referral-code" placeholder="Enter a Referral Code (optional)">
         <button class="w3-button w3-neon" onclick="signUpUser()">Sign Up</button>
         <button onclick="closePopup('signup-popup')" class="w3-button w3-neon">Close</button>
+        <div id="signup-message" class="neon-text" style="display: none;"></div>
     </div>
 
     <!-- Profile Popup -->
     <div id="profile-popup" class="popup">
         <p>Email: <span id="user-email"></span></p>
         <p>Coins: <span id="popup-coins-count">0</span></p>
-        <button id="referral-history-btn" class="w3-button w3-neon">Referral History</button>
-        <button id="verify-email-btn" class="w3-button w3-neon">Verify Email</button>
-        <button id="enter-referral-btn" class="w3-button w3-neon">Enter Referral Code</button>
+        <button id="referral-history-btn" class="w3-button w3-neon" onclick="viewReferralHistory()">Referral History</button>
+        <button id="verify-email-btn" class="w3-button w3-neon" onclick="verifyEmail()">Verify Email</button>
+        <input class="w3-input w3-margin-bottom" type="text" id="enter-referral-input" placeholder="Enter Referral Code">
+        <button id="enter-referral-btn" class="w3-button w3-neon" onclick="enterReferralCode()">Enter Referral Code</button>
         <button onclick="closePopup('profile-popup')" class="w3-button w3-neon">Close</button>
     </div>
 
@@ -127,12 +143,19 @@
         <button onclick="closePopup('referral-popup')" class="w3-button w3-neon">Close</button>
     </div>
 
+    <!-- Message Popup -->
+    <div id="message-popup" class="popup">
+        <p id="message-text"></p>
+        <button onclick="closePopup('message-popup')" class="w3-button w3-neon">Close</button>
+    </div>
+
     <script type="module">
         // JavaScript code to handle Firebase authentication and user actions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, getDoc, addDoc, increment, collection, arrayUnion } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCo-22CK4Dg3xxzMHhC8bT9h_54DTSQjfI",
             authDomain: "earn-by-reading-news-fdb97.firebaseapp.com",
@@ -142,6 +165,7 @@
             appId: "1:557093188815:web:6fb3c6325e7cf39d73b3ba"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -150,15 +174,17 @@
         window.loginUser = function() {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
+
             signInWithEmailAndPassword(auth, email, password)
-                .then(() => {
-                    alert('Login successful!');
+                .then((userCredential) => {
+                    // Show success message in popup
+                    showMessage('Login successful!');
                     closePopup('login-popup');
                     document.getElementById('earning-options').style.display = 'block'; // Show earning options
                     document.getElementById('before-login').style.display = 'none'; // Hide before-login section
                 })
                 .catch((error) => {
-                    alert(error.message);
+                    showMessage(error.message);
                 });
         };
 
@@ -170,23 +196,23 @@
 
             createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
-                    alert('Sign up successful!');
+                    showMessage('Sign up successful!');
                     closePopup('signup-popup');
                     // You can also save the user data to Firestore here if needed
                 })
                 .catch((error) => {
-                    alert(error.message);
+                    showMessage(error.message);
                 });
         };
 
         // Function to handle user logout
         window.logoutUser = function() {
             signOut(auth).then(() => {
-                alert('Logout successful!');
+                showMessage('Logout successful!');
                 document.getElementById('earning-options').style.display = 'none'; // Hide earning options
                 document.getElementById('before-login').style.display = 'block'; // Show before-login section
             }).catch((error) => {
-                alert(error.message);
+                showMessage(error.message);
             });
         };
 
@@ -205,13 +231,19 @@
             const email = document.getElementById('forgot-password-email').value;
             sendPasswordResetEmail(auth, email)
                 .then(() => {
-                    alert('Password reset email sent! Check your inbox.');
+                    showMessage('Password reset email sent! Check your inbox.');
                     closePopup('forgot-password-popup');
                 })
                 .catch((error) => {
-                    alert(error.message);
+                    showMessage(error.message);
                 });
         };
+
+        // Function to display messages in popup
+        function showMessage(message) {
+            document.getElementById('message-text').textContent = message;
+            openPopup('message-popup');
+        }
 
         // Auth state observer
         onAuthStateChanged(auth, (user) => {
@@ -222,14 +254,42 @@
                 document.getElementById('popup-coins-count').textContent = "Loading..."; // Replace with actual coins count logic
                 document.getElementById('logout-btn').style.display = 'block'; // Show logout button
                 document.getElementById('profile-btn').style.display = 'block'; // Show profile button
+                document.getElementById('login-btn').style.display = 'none'; // Hide login button
+                document.getElementById('signup-btn').style.display = 'none'; // Hide signup button
             } else {
                 // User is signed out, reset UI
                 document.getElementById('coins-count').textContent = '0';
                 document.getElementById('popup-coins-count').textContent = '0';
                 document.getElementById('logout-btn').style.display = 'none'; // Hide logout button
                 document.getElementById('profile-btn').style.display = 'none'; // Hide profile button
+                document.getElementById('login-btn').style.display = 'block'; // Show login button
+                document.getElementById('signup-btn').style.display = 'block'; // Show signup button
             }
         });
+
+        // Additional functions for referral history, email verification, and referral code
+        function viewReferralHistory() {
+            // Implement referral history logic here
+            showMessage('Referral history functionality not implemented yet.');
+        }
+
+        function verifyEmail() {
+            const user = auth.currentUser;
+            if (user) {
+                sendEmailVerification(user).then(() => {
+                    showMessage('Verification email sent! Check your inbox.');
+                }).catch((error) => {
+                    showMessage(error.message);
+                });
+            }
+        }
+
+        function enterReferralCode() {
+            const referralCode = document.getElementById('enter-referral-input').value;
+            // Add logic to handle the referral code (e.g., store it in Firestore)
+            showMessage(`Referral code ${referralCode} entered!`);
+            closePopup('profile-popup');
+        }
     </script>
 </body>
 </html>
